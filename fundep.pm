@@ -5,7 +5,7 @@ use v5.14;
 use constant TRUE => 1;
 use constant FALSE => 0;
 
-use List::MoreUtils qw(uniq);
+#use List::MoreUtils qw(uniq);
 
 sub new
 {

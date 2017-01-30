@@ -50,6 +50,7 @@ sub make_graph
 
     foreach my $node ($this->node_list())
     {
+        say "new node: `$node`";
         $result->add_node(name => $node, shape => "box");
     }
 
@@ -111,7 +112,7 @@ sub node_list
     return uniq @result;
 }
 
-sub write_to_file
+sub save_to_file
 {
     my ($this, $file) = @_;
     if(open(FILE, ">$file"))
@@ -129,4 +130,44 @@ sub write_to_file
     
 }
 
+sub load_from_file
+{
+    my ($this, $file) = @_;
+    open FILE, '<', $file or die "can't open `$file`";
+    
+    my $accumulator;
+    while(<FILE>)
+    {
+        chomp;
+        $accumulator .= $_;
+    }
+    close FILE or die "can't close file";
+    $this->load_from_text(\$accumulator);
+}
+
+sub load_from_text
+{
+    my ($this, $ref_text) = @_;
+
+    #removing parasite whitespaces
+    $$ref_text =~ s/\s+//;
+
+    my @deps = split ';', $$ref_text;
+
+    foreach (@deps)
+    {
+        my ($lhs, $rhs) = split "-->", $_;
+        my @left_attributes = split ',', $lhs;
+        my @right_attributes = split ',', $rhs;
+
+        #removing spaces before and after attributes
+        map { hard_trim(\$_) } @left_attributes;
+        map { hard_trim(\$_) } @right_attributes;
+
+        $this->add(\@left_attributes, \@right_attributes);
+    }
+}
+
+#apparently this doesn't exist in perl
+sub  hard_trim { my $s = shift; $$s =~ s/^\s+|\s+$//g; };
 1;

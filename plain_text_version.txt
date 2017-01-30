@@ -1,0 +1,13 @@
+idCine --> adresse,ville,nbSalles;
+idFilm --> nomFilm,dateSortie;
+idPers --> nomP,prenomP;
+idPers,idFilm --> role;
+idClient --> nomC,prenomC;
+idSeance --> adresse,ville,horaire,dateSortie,numSalle;
+adresse,ville --> franchise,nbSalles;
+adresse,ville,numSalle --> salleCompatible3D,nbPlacesStandard,nbPlacesHandicape,nbDBox;
+nomFilm,dateSortie --> public,idPersASidReal,duree,compatible3D;
+nomFilm,dateSortie,role --> idPersASidAct;
+adresse,ville,horaire,dateProjection,numSalle --> nomFilm,dateSortie,diffusionEn3D;
+nomC,prenomC,numReservation --> nbPlacesStandardRes,nbPlacesHandicapeRes,nbDBoxRes,nomFilm,adresse,ville,salle,horaire;
+horaire,nomFilm,adresse,ville --> numSalle;

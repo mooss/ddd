@@ -35,4 +35,4 @@ say "nodelist :", join(", ", $schema->node_list());
 
 $schema->make_graph()->run(format => 'svg', output_file => 'dependencies_output.svg');
 
-$schema->write_to_file("plain_text_version.txt");
+$schema->save_to_file("plain_text_version.txt");
