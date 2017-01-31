@@ -9,6 +9,7 @@ use fundep;
 use List::MoreUtils qw(uniq);
 use Data::Dumper;
 use colorpalette;
+use array_ops;
 
 sub new
 {
@@ -32,6 +33,12 @@ sub add
 {
     my ($this, $lhs, $rhs) = @_;
     push @{$this->{deps}}, fundep->new($lhs, $rhs);
+}
+
+sub add_dependencie
+{
+    my ($this, $dep) = @_;
+    push @{$this->{deps}}, $dep->clone();
 }
 
 
@@ -103,6 +110,88 @@ sub load_from_text
     }
 }
 
+sub to_plain_text()
+{
+    my $this = shift;
+    
+    return join "\n", map {$_->to_plain_text()} $this->dependencies();
+}
+
 #apparently this doesn't exist in perl
 sub  hard_trim { my $s = shift; $$s =~ s/^\s+|\s+$//g; };
+
+
+
+sub couverture_minimale
+{
+    my $this = shift;
+    #$this->rendre_elementaire();
+    
+}
+
+sub closure
+{
+    my ($this, $original_set) = @_;
+
+    my $result;
+    my $has_changed;
+    my $dependencies = $this->clone_dependencies();
+    @$result = @$original_set;
+    
+    do
+    {
+        $has_changed = FALSE;
+        for( my $i = 0; $i < @$dependencies; ++$i)
+        {
+            if( is_subset($dependencies->[$i]->{lhs}, $result))
+            {
+                push @$result, @{$dependencies->[$i]->{rhs}};
+                $has_changed = TRUE;
+                splice @$dependencies, $i, 1;
+                --$i;
+            }
+        }
+    } while $has_changed;
+
+    return $result;
+}
+
+# sub rendre_elementaire
+# {
+#     my $this = shift;
+#     my @non_elem_list;
+
+#     foreach (@{$this->{deps}})
+#     {
+#         foreach (@{$_->{rhs}})
+#         {
+            
+#         }
+#     }
+# }
+
+sub clone
+{
+    my $this = shift;
+    my $result = $this->new();
+
+    foreach ($this->dependencies())
+    {
+        $result->add_dependencie($_);
+    }
+    return $result;
+}
+
+sub clone_dependencies
+{
+    my $this = shift;
+    my $result;
+    foreach ($this->dependencies())
+    {
+        push @$result, $_->clone();
+    }
+
+    return $result;
+}
+
 1;

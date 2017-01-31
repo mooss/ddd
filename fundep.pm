@@ -53,4 +53,12 @@ sub to_plain_text
     return join(",", $this->lhs()) . " --> " . join(",", $this->rhs()) . ";";
 }
 
+sub clone
+{
+    my $this = shift;
+    my @cloned_lhs = @{$this->{lhs}};
+    my @cloned_rhs = @{$this->{rhs}};
+    return $this->new( \@cloned_lhs, \@cloned_rhs);
+}
+
 1;
