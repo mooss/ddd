@@ -77,7 +77,7 @@ sub make_graph
                                    to => $placeholder,
                                    color => $edge_color);
             }
-            foreach my $attr ($dep->rhs())
+            foreach my $attr (@{$dep->{rhs}})
             {
                 $result->add_edge( from => $placeholder,
                                    to => $attr, color =>
@@ -87,7 +87,7 @@ sub make_graph
         else # un seul attribut du coté gauche
         {
             my $lhs = $dep->{lhs}[0];
-            foreach my $attr ($dep->rhs())
+            foreach my $attr (@{$dep->{rhs}})
             {
                 $result->add_edge(
                     from => $lhs,

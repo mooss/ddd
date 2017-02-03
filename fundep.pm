@@ -50,7 +50,7 @@ sub rhs
 sub to_plain_text
 {
     my $this = shift;
-    return join(",", $this->lhs()) . " --> " . join(",", $this->rhs()) . ";";
+    return join(",", @{$this->{lhs}}) . " --> " . join(",", @{$this->{rhs}}) . ";";
 }
 
 sub clone

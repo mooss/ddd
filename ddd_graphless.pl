@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use v5.14;
 
-use schema_graphless;
+use schema2;
 use array_ops;
 
 # my @lost = ("4", "8", "15", "16", "23", "42");
@@ -18,7 +18,7 @@ use array_ops;
 # say "";
 # inclusion_test(\@whatever, \@partial_lost);
 
-my $schema = schema->new();
+my $schema = schema2->new();
 $schema->load_from_file("plain_text_version.txt");
 
 # my $format = "svg";
@@ -36,6 +36,12 @@ foreach (@{$schema->{deps}})
         join(", ", @$closure);
     say"\n#==========================#\n";
 }
+
+say "\n dépendances élémentaires :";
+say "_t", $schema->armstrong_decomposition()->to_plain_text();
+
+my $test_attribute = ["dateSortie"];
+say "dependences determinant ", join(", ", @$test_attribute), "\n\t", $schema->subset_determining($test_attribute)->to_plain_text();
 
 sub inclusion_test
 {

@@ -1,4 +1,4 @@
-package schema;
+package schema2;
 use strict;
 use warnings;
 use v5.14;
@@ -10,6 +10,9 @@ use List::MoreUtils qw(uniq);
 use Data::Dumper;
 use colorpalette;
 use array_ops;
+use GraphViz2;
+use mooss_utils;
+
 
 sub new
 {
@@ -93,14 +96,14 @@ sub load_from_text
 
     #removing parasite whitespaces
     $$ref_text =~ s/\s+//;
-
+    my $attributes_separator = "#";
     my @deps = split ';', $$ref_text;
 
     foreach (@deps)
     {
         my ($lhs, $rhs) = split "-->", $_;
-        my @left_attributes = split ',', $lhs;
-        my @right_attributes = split ',', $rhs;
+        my @left_attributes = split $attributes_separator, $lhs;
+        my @right_attributes = split $attributes_separator, $rhs;
 
         #removing spaces before and after attributes
         map { hard_trim(\$_) } @left_attributes;
@@ -117,8 +120,6 @@ sub to_plain_text()
     return join "\n", map {$_->to_plain_text()} $this->dependencies();
 }
 
-#apparently this doesn't exist in perl
-sub  hard_trim { my $s = shift; $$s =~ s/^\s+|\s+$//g; };
 
 
 
@@ -158,7 +159,7 @@ sub closure
     return $result;
 }
 
-sub elementary # (décomposition d'armstrong)
+sub armstrong_decomposition # (décomposition d'armstrong)
 {
     my $this = shift;
     my $result = $this->new();
@@ -178,16 +179,15 @@ sub elementary # (décomposition d'armstrong)
 }
 
 #trouver le plus petit subset de la partie gauche permettant de générer la même partie droite
-sub minimal
-{
-    my $this = shift;
-    my $result = $this->elementary();
+# sub elementary
+# {
+#     my $this = shift;
+#     my $result = $this->armstrong_decomposition();
+#     my $fermeture_fonctionnelle = $this->closure( $this->attributes_list());
 
-    my $fermeture_fonctionnelle = $this->closure();
-
+#     for(my $i = 0; $i < @$result)
     
-    
-}
+# }
 
 sub subset_determining
 {
@@ -210,7 +210,6 @@ sub remove_non_conforming
     {
         if(! $predicat->($$ref_tab[$i]))
         {
-            say "removing " . $$ref_tab[$i];
             splice @$ref_tab, $i, 1;
             --$i;
         }
@@ -254,6 +253,104 @@ sub clone_dependencies
     return $result;
 }
 
+sub make_graph
+{
+    my $this = shift;
+    
+    my $result = GraphViz2->new
+        (
+         edge => {color => 'red'},
+         global => {directed => 1},
+         node => {shape => 'box'},
+         graph =>{
+             size => "15, 500!",
+             ratio => "compress"},
+         
+        );
 
+    my $placeholder_num = 0;
+
+    foreach my $node ($this->node_list())
+    {
+        $result->add_node(name => $node, shape => "box",
+            label => labelize($node));
+    }
+
+    my $color_palette = colorpalette->new();
+
+    for(my $i = 0; $i < $this->dependencies(); ++$i)
+    {
+        my $dep = @{$this->{deps}}[$i];
+        my $edge_color = $color_palette->next();
+
+        
+        if($dep->lhs() > 1)
+        {
+            my $placeholder = "placeholder_$placeholder_num";
+            ++$placeholder_num;
+            #utilisation d'un placeholder pour représenter les dépendances ayant plus d'un attribut à gauche
+            $result->add_node(name => $placeholder,
+                              label => "",
+                              shape => "underline",
+                              height => 0.01);
+            foreach my $attr ($dep->lhs())
+            {
+                $result->add_edge( from => $attr,
+                                   to => $placeholder,
+                                   color => $edge_color);
+            }
+            foreach my $attr (@{$dep->{rhs}})
+            {
+                $result->add_edge( from => $placeholder,
+                                   to => $attr, color =>
+                                   $edge_color);
+            }
+        }
+        else # un seul attribut du coté gauche
+        {
+            my $lhs = $dep->{lhs}[0];
+            foreach my $attr (@{$dep->{rhs}})
+            {
+                $result->add_edge(
+                    from => $lhs,
+                    to => $attr,
+                    color => $edge_color);
+            }
+        }
+    }
+
+    return $result;
+}
+
+sub labelize
+{
+    my $name = shift;
+    my $size = shift || 50;
+    my $split_char = ",";
+
+    $name =~ s/~retour_ligne~/\n/;
+    
+    my @decoupe = split $split_char, $name;
+
+    my $accu = "";
+    my $result;
+
+    foreach(@decoupe)
+    {
+        if(length $accu <= $size)
+        {
+            $accu .= $_ . $split_char;
+        }
+        else
+        {
+            $result .= "\n" . $accu;
+            $accu = $_;
+        }
+    }
+    $result .= "\n" . $accu;
+    $result =~ s/,$//;
+    return $result;
+    
+}
 
 1;

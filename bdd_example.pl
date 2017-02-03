@@ -32,7 +32,7 @@ $schema->add(["horaire", "nomFilm", "adresse", "ville"],
 
 say "nodelist :", join(", ", $schema->node_list());
 
-
-$schema->make_graph()->run(format => 'svg', output_file => 'dependencies_output.svg');
+my $format = shift || 'svg';
+$schema->make_graph()->run(format => $format, output_file => 'dependencies_output.' . "$format");
 
 $schema->save_to_file("plain_text_version.txt");
